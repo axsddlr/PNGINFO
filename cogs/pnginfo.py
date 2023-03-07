@@ -35,15 +35,16 @@ class PNGINFO(commands.Cog):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        # Save the image file to the images directory
-        image_path = os.path.join(directory, f"{message.id}.png")
+        # Save the image file to the images directory with the original filename
+        filename = message.attachments[0].filename
+        image_path = os.path.join(directory, filename)
         await message.attachments[0].save(image_path)
 
         # Extract metadata from the saved image file
         metadata_dict = extract_metadata(image_path)
 
         # Send the metadata as a JSON object in a Discord message
-        metadata_json = json.dumps(metadata_dict, indent=2)
+        metadata_json = json.dumps(metadata_dict, indent=4)
         await ctx.send(f"```{metadata_json}```")
 
         # Delete the image file after 10 seconds
