@@ -21,11 +21,16 @@ class ImageCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message and message.attachments and message.guild and message.guild.id == TARGET_GUILD_ID and message.channel.id == TARGET_CHANNEL_ID:
-            attachment = message.attachments[0]
-            if attachment.content_type.startswith('image/'):
-                await message.add_reaction('🔍')
-                await message.add_reaction('📥')
+        if message.author.bot or not message.attachments:
+            return
+
+        attachment = message.attachments[0]
+        if not attachment.content_type.startswith('image/') or attachment.content_type == 'image/gif':
+            return
+
+        if message.guild.id == TARGET_GUILD_ID and message.channel.id == TARGET_CHANNEL_ID:
+            await message.add_reaction('🔍')
+            await message.add_reaction('📥')
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
