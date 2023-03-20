@@ -21,13 +21,11 @@ class ImageCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.guild.id == TARGET_GUILD_ID and message.channel.id == TARGET_CHANNEL_ID:
-            print("Inside the target guild and channel")
-            if message.attachments:
-                attachment = message.attachments[0]
-                if attachment.content_type.startswith('image/'):
-                    await message.add_reaction('🔍')
-                    await message.add_reaction('📥')
+        if message and message.attachments and message.guild and message.guild.id == TARGET_GUILD_ID and message.channel.id == TARGET_CHANNEL_ID:
+            attachment = message.attachments[0]
+            if attachment.content_type.startswith('image/'):
+                await message.add_reaction('🔍')
+                await message.add_reaction('📥')
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
