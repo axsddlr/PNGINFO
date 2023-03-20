@@ -45,7 +45,8 @@ class ImageCog(commands.Cog):
                     buffer.seek(0)
                     metadata = extract_metadata(buffer, filename=attachment.filename)
                     formatted_metadata = "\n".join([f"{key}: {value}" for key, value in metadata.items()])
-                    await user.send(f"```{formatted_metadata}```")
+                    post_link = f"Image Post: {message.jump_url}\n\n"
+                    await user.send(f"```{formatted_metadata}```\n{post_link}")
                 await message.remove_reaction('🔍', user)
             elif payload.emoji.name == '📥':
                 buffer.seek(0)
