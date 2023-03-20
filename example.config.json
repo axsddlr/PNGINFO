@@ -1,3 +1,5 @@
 {
-  "DISCORD_TOKEN": ""
+  "DISCORD_TOKEN": "",
+  "DISCORD_CHANNEL_ID": "<int> (remove the <> and quotes)",
+  "DISCORD_GUILD_ID": "<int> (remove the <> and quotes)"
 }

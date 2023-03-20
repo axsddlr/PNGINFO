@@ -8,10 +8,10 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 
 TOKEN = config["DISCORD_TOKEN"]
-# discord_id = config["discord_id"]
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.messages = True
 
 
 class Bot(commands.Bot):
@@ -21,8 +21,6 @@ class Bot(commands.Bot):
     async def startup(self):
         await bot.wait_until_ready()
         await bot.tree.sync()
-        await bot.change_presence(status=discord.Status.online,
-                                  activity=discord.Activity(type=discord.ActivityType.listening, name="metadata glutton"))
         print('Sucessfully synced applications commands')
         print(f'Connected as {bot.user}')
 
