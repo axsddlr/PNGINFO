@@ -5,7 +5,11 @@ import discord
 from PIL import Image
 from discord.ext import commands
 
-from util.image_metadata import extract_metadata, get_embed
+from util.image_metadata import (
+    extract_metadata,
+    get_embed,
+    read_info_from_image_stealth,
+)
 
 with open("config.json", "r") as f:
     config = json.load(f)
@@ -35,7 +39,16 @@ class ImageCog(commands.Cog):
             message.guild.id == TARGET_GUILD_ID
             and message.channel.id == TARGET_CHANNEL_ID
         ):
-            await message.add_reaction("🔍")
+            buffer = BytesIO()
+            await attachment.save(buffer)
+
+            with Image.open(buffer) as image:
+                buffer.seek(0)
+                metadata_text = read_info_from_image_stealth(image)
+
+            if metadata_text:
+                await message.add_reaction("🔍")
+
             await message.add_reaction("📥")
 
     @commands.Cog.listener()
