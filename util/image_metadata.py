@@ -113,6 +113,10 @@ def get_embed(embed_dict, context):
         else:
             embed.add_field(name=key, value=value, inline=True)
 
+    embed.add_field(
+        name="Original Message", value=f"[Click here]({context.jump_url})", inline=False
+    )
+
     embed.set_footer(
         text=f"Requested by {context.author}", icon_url=context.author.avatar.url
     )
