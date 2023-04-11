@@ -73,14 +73,9 @@ def get_parameters(param_str):
     if "Negative prompt: " in prompts:
         output_dict["Prompt"] = prompts.split("Negative prompt: ")[0]
         output_dict["Negative Prompt"] = prompts.split("Negative prompt: ")[1]
-        if len(output_dict["Negative Prompt"]) > 1000:
-            output_dict["Negative Prompt"] = (
-                output_dict["Negative Prompt"][:1000] + "..."
-            )
     else:
         output_dict["Prompt"] = prompts
-    if len(output_dict["Prompt"]) > 1000:
-        output_dict["Prompt"] = output_dict["Prompt"][:1000] + "..."
+
     params = params.split(", ")
     for param in params:
         try:
@@ -105,10 +100,16 @@ def get_embed(embed_dict, context):
     embed = Embed()
 
     for key, value in embed_dict.items():
-        if key == "Prompt":
-            embed.add_field(name=key, value=value, inline=False)
-        elif key == "Negative Prompt":
-            embed.add_field(name=key, value="\n" + value, inline=False)
+        if key in ["Prompt", "Negative Prompt"]:
+            if len(value) <= 1024:
+                embed.add_field(name=key, value=value, inline=False)
+            else:
+                # Split long text into multiple fields
+                for i, chunk in enumerate(
+                    value[i : i + 1024] for i in range(0, len(value), 1024)
+                ):
+                    field_name = f"{key} (part {i + 1})"
+                    embed.add_field(name=field_name, value=chunk, inline=False)
         else:
             embed.add_field(name=key, value=value, inline=True)
 
