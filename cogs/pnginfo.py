@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from util.image_metadata import extract_metadata
 
-with open('config.json', 'r') as f:
+with open("config.json", "r") as f:
     config = json.load(f)
 
 TOKEN = config["DISCORD_TOKEN"]
@@ -25,12 +25,18 @@ class ImageCog(commands.Cog):
             return
 
         attachment = message.attachments[0]
-        if not attachment.content_type.startswith('image/') or attachment.content_type == 'image/gif':
+        if (
+            not attachment.content_type.startswith("image/")
+            or attachment.content_type == "image/gif"
+        ):
             return
 
-        if message.guild.id == TARGET_GUILD_ID and message.channel.id == TARGET_CHANNEL_ID:
-            await message.add_reaction('🔍')
-            await message.add_reaction('📥')
+        if (
+            message.guild.id == TARGET_GUILD_ID
+            and message.channel.id == TARGET_CHANNEL_ID
+        ):
+            await message.add_reaction("🔍")
+            await message.add_reaction("📥")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -43,18 +49,20 @@ class ImageCog(commands.Cog):
             buffer = BytesIO()
             await attachment.save(buffer)
 
-            if payload.emoji.name == '🔍':
+            if payload.emoji.name == "🔍":
                 with Image.open(buffer):
                     buffer.seek(0)
                     metadata = extract_metadata(buffer, filename=attachment.filename)
-                    formatted_metadata = "\n".join([f"{key}: {value}" for key, value in metadata.items()])
+                    formatted_metadata = "\n".join(
+                        [f"{key}: {value}" for key, value in metadata.items()]
+                    )
                     post_link = f"Image Post: {message.jump_url}\n\n"
                     await user.send(f"```{formatted_metadata}```\n{post_link}")
-                await message.remove_reaction('🔍', user)
-            elif payload.emoji.name == '📥':
+                await message.remove_reaction("🔍", user)
+            elif payload.emoji.name == "📥":
                 buffer.seek(0)
                 await user.send(file=discord.File(buffer, filename=attachment.filename))
-                await message.remove_reaction('📥', user)
+                await message.remove_reaction("📥", user)
 
 
 async def setup(bot):
