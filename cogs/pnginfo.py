@@ -89,26 +89,11 @@ class ImageCog(commands.Cog):
                             metadata = extract_metadata(
                                 buffer, image, filename=attachment.filename
                             )
-                            metadata["Negative Prompt"] = (
-                                metadata["Negative Prompt"]
-                                .replace("\\", "")
-                                .replace("\n", " ")
-                            )
-                            metadata["Prompt"] = metadata["Prompt"].replace("\n", " ")
-
-                            # Reorder metadata to place "Prompt" above "Negative Prompt"
-                            reordered_metadata = {
-                                "Prompt": metadata["Prompt"],
-                                "Negative Prompt": metadata["Negative Prompt"],
-                                **{
-                                    k: v
-                                    for k, v in metadata.items()
-                                    if k not in ["Prompt", "Negative Prompt"]
-                                },
-                            }
-
+                            metadata["Negative Prompt"] = metadata[
+                                "Negative Prompt"
+                            ].replace("\\", "")
                             parameters_yaml_data.append(
-                                f"\n{attachment.filename}:\n{yaml.dump(reordered_metadata, default_flow_style=False, allow_unicode=True)}\n---\n"
+                                f"{attachment.filename}:\n{yaml.dump(metadata, default_flow_style=False)}---\n"
                             )
 
                     yaml_data = "".join(parameters_yaml_data)
@@ -122,15 +107,14 @@ class ImageCog(commands.Cog):
                             file=parameters_file,
                         )
             elif payload.emoji.name == "✉️":
+                attachment = message.attachments[0]
+                buffer = BytesIO()
+                await attachment.save(buffer)
+                buffer.seek(0)
                 if user:
-                    files = []
-                    for attachment in message.attachments:
-                        buffer = BytesIO()
-                        await attachment.save(buffer)
-                        buffer.seek(0)
-                        files.append(discord.File(buffer, filename=attachment.filename))
-
-                    await user.send(files=files)
+                    await user.send(
+                        file=discord.File(buffer, filename=attachment.filename)
+                    )
             elif payload.emoji.name == "ℹ️" and not payload.member.bot:
                 if user:
                     await user.send(
