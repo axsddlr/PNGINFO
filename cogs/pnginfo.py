@@ -49,7 +49,7 @@ class ImageCog(commands.Cog):
             if metadata_text:
                 await message.add_reaction("🔍")
 
-            await message.add_reaction("📥")
+            await message.add_reaction("✉️")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -72,10 +72,10 @@ class ImageCog(commands.Cog):
                     embed = get_embed(embed_dict, message)
                     await user.send(embed=embed)
                 await message.remove_reaction("🔍", user)
-            elif payload.emoji.name == "📥":
+            elif payload.emoji.name == "✉️":
                 buffer.seek(0)
                 await user.send(file=discord.File(buffer, filename=attachment.filename))
-                await message.remove_reaction("📥", user)
+                await message.remove_reaction("✉️", user)
 
 
 async def setup(bot):
