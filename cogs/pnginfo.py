@@ -89,11 +89,26 @@ class ImageCog(commands.Cog):
                             metadata = extract_metadata(
                                 buffer, image, filename=attachment.filename
                             )
-                            metadata["Negative Prompt"] = metadata[
-                                "Negative Prompt"
-                            ].replace("\\", "")
+                            negative_prompt = (
+                                metadata.get("Negative Prompt", "")
+                                .replace("\\", "")
+                                .replace("\n", " ")
+                            )
+                            prompt = metadata.get("Prompt", "").replace("\n", " ")
+
+                            # Reorder metadata to place "Prompt" above "Negative Prompt"
+                            reordered_metadata = {
+                                "Prompt": prompt,
+                                "Negative Prompt": negative_prompt,
+                                **{
+                                    k: v
+                                    for k, v in metadata.items()
+                                    if k not in ["Prompt", "Negative Prompt"]
+                                },
+                            }
+
                             parameters_yaml_data.append(
-                                f"{attachment.filename}:\n{yaml.dump(metadata, default_flow_style=False)}---\n"
+                                f"\n{attachment.filename}:\n{yaml.dump(reordered_metadata, default_flow_style=False, allow_unicode=True)}\n---\n"
                             )
 
                     yaml_data = "".join(parameters_yaml_data)
@@ -107,19 +122,15 @@ class ImageCog(commands.Cog):
                             file=parameters_file,
                         )
             elif payload.emoji.name == "✉️":
-                attachment = message.attachments[0]
-                buffer = BytesIO()
-                await attachment.save(buffer)
-                buffer.seek(0)
                 if user:
-                    await user.send(
-                        file=discord.File(buffer, filename=attachment.filename)
-                    )
-            elif payload.emoji.name == "ℹ️" and not payload.member.bot:
-                if user:
-                    await user.send(
-                        f"{user.mention}, This extension is for bypassing Discord exif data stripping Only works for png image. Here's the link to the GitHub repository for more information:\nhttps://github.com/ashen-sensored/sd_webui_stealth_pnginfo"
-                    )
+                    files = []
+                    for attachment in message.attachments:
+                        buffer = BytesIO()
+                        await attachment.save(buffer)
+                        buffer.seek(0)
+                        files.append(discord.File(buffer, filename=attachment.filename))
+
+                    await user.send(files=files)
 
 
 async def setup(bot):
