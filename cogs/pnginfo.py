@@ -69,11 +69,11 @@ class ImageCog(commands.Cog):
             await attachment.save(buffer)
 
             # Check the bot's permissions in the channel
-            bot_member = channel.guild.get_member(self.bot.user.id)
-            bot_permissions = channel.permissions_for(bot_member)
+            # bot_member = channel.guild.get_member(self.bot.user.id)
+            # bot_permissions = channel.permissions_for(bot_member)
 
             # Print the bot's permissions
-            print(f"Bot permissions in channel {channel.name}: {bot_permissions}")
+            # print(f"Bot permissions in channel {channel.name}: {bot_permissions}")
 
             if payload.emoji.name == "🔍":
                 with Image.open(buffer) as image:
@@ -85,14 +85,14 @@ class ImageCog(commands.Cog):
                     embed = get_embed(embed_dict, message)
                     if user:  # Check if user is not None
                         await user.send(embed=embed)
-                await message.remove_reaction("🔍", user)
+                # await message.remove_reaction("🔍", user)
             elif payload.emoji.name == "✉️":
                 buffer.seek(0)
                 if user:  # Check if user is not None
                     await user.send(
                         file=discord.File(buffer, filename=attachment.filename)
                     )
-                await message.remove_reaction("✉️", user)
+                # await message.remove_reaction("✉️", user)
             elif payload.emoji.name == "ℹ️" and not payload.member.bot:
                 if user:  # Check if user is not None
                     await user.send(
