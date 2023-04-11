@@ -29,6 +29,9 @@ class ImageCog(commands.Cog):
         if message.author.bot or not message.attachments:
             return
 
+        if not message.attachments:  # Check if the message has attachments
+            return
+
         attachment = message.attachments[0]
         if (
             not attachment.content_type.startswith("image/")
