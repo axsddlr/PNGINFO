@@ -68,6 +68,13 @@ class ImageCog(commands.Cog):
             buffer = BytesIO()
             await attachment.save(buffer)
 
+            # Check the bot's permissions in the channel
+            bot_member = channel.guild.get_member(self.bot.user.id)
+            bot_permissions = channel.permissions_for(bot_member)
+
+            # Print the bot's permissions
+            print(f"Bot permissions in channel {channel.name}: {bot_permissions}")
+
             if payload.emoji.name == "🔍":
                 with Image.open(buffer) as image:
                     buffer.seek(0)
