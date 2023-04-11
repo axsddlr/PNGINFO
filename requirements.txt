@@ -1,2 +1,3 @@
 git+https://github.com/Rapptz/discord.py
 Pillow==9.4.0
+PyYAML==6.0
