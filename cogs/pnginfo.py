@@ -4,6 +4,7 @@ import json
 import discord
 from PIL import Image
 from discord.ext import commands
+from discord import RawReactionActionEvent
 
 from util.image_metadata import (
     extract_metadata,
@@ -48,11 +49,13 @@ class ImageCog(commands.Cog):
 
             if metadata_text:
                 await message.add_reaction("🔍")
+            else:
+                await message.add_reaction("ℹ️")
 
             await message.add_reaction("✉️")
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
+    async def on_raw_reaction_add(self, payload: RawReactionActionEvent):
         if payload.user_id != self.bot.user.id:
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
@@ -70,12 +73,21 @@ class ImageCog(commands.Cog):
                     )
                     embed_dict = {key: str(value) for key, value in metadata.items()}
                     embed = get_embed(embed_dict, message)
-                    await user.send(embed=embed)
+                    if user:  # Check if user is not None
+                        await user.send(embed=embed)
                 await message.remove_reaction("🔍", user)
             elif payload.emoji.name == "✉️":
                 buffer.seek(0)
-                await user.send(file=discord.File(buffer, filename=attachment.filename))
+                if user:  # Check if user is not None
+                    await user.send(
+                        file=discord.File(buffer, filename=attachment.filename)
+                    )
                 await message.remove_reaction("✉️", user)
+            elif payload.emoji.name == "ℹ️" and not payload.member.bot:
+                if user:  # Check if user is not None
+                    await user.send(
+                        f"{user.mention}, This extension is for bypassing Discord exif data stripping Only works for png image. Here's the link to the GitHub repository for more information:\nhttps://github.com/ashen-sensored/sd_webui_stealth_pnginfo"
+                    )
 
 
 async def setup(bot):
