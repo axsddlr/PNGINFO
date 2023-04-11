@@ -5,7 +5,7 @@ import discord
 from PIL import Image
 from discord.ext import commands
 
-from util.image_metadata import extract_metadata
+from util.image_metadata import extract_metadata, get_embed
 
 with open("config.json", "r") as f:
     config = json.load(f)
@@ -50,14 +50,14 @@ class ImageCog(commands.Cog):
             await attachment.save(buffer)
 
             if payload.emoji.name == "🔍":
-                with Image.open(buffer):
+                with Image.open(buffer) as image:
                     buffer.seek(0)
-                    metadata = extract_metadata(buffer, filename=attachment.filename)
-                    formatted_metadata = "\n".join(
-                        [f"{key}: {value}" for key, value in metadata.items()]
+                    metadata = extract_metadata(
+                        buffer, image, filename=attachment.filename
                     )
-                    post_link = f"Image Post: {message.jump_url}\n\n"
-                    await user.send(f"```{formatted_metadata}```\n{post_link}")
+                    embed_dict = {key: str(value) for key, value in metadata.items()}
+                    embed = get_embed(embed_dict, message)
+                    await user.send(embed=embed)
                 await message.remove_reaction("🔍", user)
             elif payload.emoji.name == "📥":
                 buffer.seek(0)
