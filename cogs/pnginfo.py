@@ -63,9 +63,15 @@ class ImageCog(commands.Cog):
             message = await channel.fetch_message(payload.message_id)
             user = await self.bot.fetch_user(payload.user_id)
 
+            image_attachments = [
+                attachment
+                for attachment in message.attachments
+                if attachment.content_type.startswith("image/")
+            ]
+
             if payload.emoji.name == "🔍":
-                if len(message.attachments) == 1:
-                    attachment = message.attachments[0]
+                if len(image_attachments) == 1:
+                    attachment = image_attachments[0]
                     buffer = BytesIO()
                     await attachment.save(buffer)
                     with Image.open(buffer) as image:
@@ -79,7 +85,7 @@ class ImageCog(commands.Cog):
                         embed = get_embed(embed_dict, message)
                         if user:
                             await user.send(embed=embed)
-                else:
+                elif len(image_attachments) > 1:
                     parameters_yaml_data = []
                     for attachment in message.attachments:
                         buffer = BytesIO()
