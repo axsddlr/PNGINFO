@@ -22,6 +22,8 @@ class HofCog(commands.Cog):
         if payload.channel_id == initial_channel_id:
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
+            await asyncio.sleep(5)
+            message = await channel.fetch_message(payload.message_id)
             star_count = sum([r.count for r in message.reactions if r.emoji == "⭐"])
 
             destination_channel_id = TARGET_CHANNEL_ID
@@ -45,11 +47,6 @@ class HofCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.emoji.name == "⭐":
-            await self.check_star_count(payload)
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload):
         if payload.emoji.name == "⭐":
             await self.check_star_count(payload)
 
