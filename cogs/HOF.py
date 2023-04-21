@@ -8,8 +8,10 @@ with open("config.json", "r") as f:
 
 TOKEN = config["DISCORD_TOKEN"]
 TARGET_GUILD_ID = config["DISCORD_GUILD_ID"]
-TARGET_CHANNEL_ID = config["DISCORD_CHANNEL_ID"]
-INITIAL_CHANNEL_ID = config["DISCORD_INITIAL_CHANNEL_ID"]
+TARGET_CHANNEL_ID = config["DESTINATION_DISCORD_CHANNEL_ID"]
+INITIAL_CHANNEL_ID = config["DISCORD_CHANNEL_ID"]
+UNIQUE_USERS_THRESHOLD = config["UNIQUE_USERS_THRESHOLD"]
+DELAY_TIME = config["DELAY_TIME"]
 
 
 class HofCog(commands.Cog):
@@ -21,7 +23,7 @@ class HofCog(commands.Cog):
         if payload.channel_id == initial_channel_id:
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
-            await asyncio.sleep(5)
+            await asyncio.sleep(DELAY_TIME)
             message = await channel.fetch_message(payload.message_id)
 
             unique_users = set()
@@ -29,11 +31,11 @@ class HofCog(commands.Cog):
                 async for user in reaction.users():
                     unique_users.add(user.id)
 
-            if len(unique_users) >= 2:
+            if len(unique_users) >= UNIQUE_USERS_THRESHOLD:
                 destination_channel_id = TARGET_CHANNEL_ID
                 destination_channel = self.bot.get_channel(destination_channel_id)
                 embed = discord.Embed(
-                    title=f"{message.channel.name}",
+                    title=f"Reactions: {len(unique_users)} | {message.channel.name}",
                     description=f"[Original Post](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})",
                     timestamp=message.created_at,
                     color=discord.Color.gold(),
