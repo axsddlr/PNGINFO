@@ -17,6 +17,7 @@ DELAY_TIME = config["DELAY_TIME"]
 class HofCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.sent_messages = set()
 
     async def check_unique_reactions(self, payload):
         initial_channel_id = INITIAL_CHANNEL_ID
@@ -26,6 +27,9 @@ class HofCog(commands.Cog):
             await asyncio.sleep(DELAY_TIME)
             message = await channel.fetch_message(payload.message_id)
 
+            if message.id in self.sent_messages:
+                return
+
             unique_users = set()
             for reaction in message.reactions:
                 if reaction.emoji not in ["🔍", "✉️"]:
@@ -33,6 +37,7 @@ class HofCog(commands.Cog):
                         unique_users.add(user.id)
 
             if len(unique_users) >= UNIQUE_USERS_THRESHOLD:
+                self.sent_messages.add(message.id)
                 destination_channel_id = TARGET_CHANNEL_ID
                 destination_channel = self.bot.get_channel(destination_channel_id)
                 embed = discord.Embed(
