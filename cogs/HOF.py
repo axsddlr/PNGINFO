@@ -10,28 +10,30 @@ TOKEN = config["DISCORD_TOKEN"]
 TARGET_GUILD_ID = config["DISCORD_GUILD_ID"]
 TARGET_CHANNEL_ID = config["DISCORD_CHANNEL_ID"]
 INITIAL_CHANNEL_ID = config["DISCORD_INITIAL_CHANNEL_ID"]
-REACTION_THRESHOLD = config["REACTION_THRESHOLD"]
 
 
 class HofCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def check_star_count(self, payload):
+    async def check_unique_reactions(self, payload):
         initial_channel_id = INITIAL_CHANNEL_ID
         if payload.channel_id == initial_channel_id:
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
             await asyncio.sleep(5)
             message = await channel.fetch_message(payload.message_id)
-            star_count = sum([r.count for r in message.reactions if r.emoji == "⭐"])
 
-            destination_channel_id = TARGET_CHANNEL_ID
-            star_reaction_threshold = 5
-            if star_count >= star_reaction_threshold:
+            unique_users = set()
+            for reaction in message.reactions:
+                async for user in reaction.users():
+                    unique_users.add(user.id)
+
+            if len(unique_users) >= 2:
+                destination_channel_id = TARGET_CHANNEL_ID
                 destination_channel = self.bot.get_channel(destination_channel_id)
                 embed = discord.Embed(
-                    title=f"({star_count})⭐ | {message.channel.name}",
+                    title=f"{message.channel.name}",
                     description=f"[Original Post](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})",
                     timestamp=message.created_at,
                     color=discord.Color.gold(),
@@ -47,8 +49,7 @@ class HofCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.emoji.name == "⭐":
-            await self.check_star_count(payload)
+        await self.check_unique_reactions(payload)
 
 
 async def setup(bot):
