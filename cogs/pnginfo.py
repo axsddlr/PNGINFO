@@ -51,8 +51,8 @@ class ImageCog(commands.Cog):
 
                 if metadata_text:
                     await message.add_reaction("🔍")
-                else:
-                    await message.add_reaction("ℹ️")
+                # else:
+                #     await message.add_reaction("ℹ️")
 
                 await message.add_reaction("✉️")
 
