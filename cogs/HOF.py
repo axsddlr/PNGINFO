@@ -19,6 +19,18 @@ class HofCog(commands.Cog):
         self.bot = bot
         self.sent_messages = set()
 
+    async def has_permissions(self, channel):
+        me = channel.guild.me
+        perms = channel.permissions_for(me)
+        missing_perms = []
+
+        if not perms.send_messages:
+            missing_perms.append("Send Messages")
+        if not perms.embed_links:
+            missing_perms.append("Embed Links")
+
+        return (len(missing_perms) == 0, missing_perms)
+
     async def check_unique_reactions(self, payload):
         initial_channel_id = INITIAL_CHANNEL_ID
         if payload.channel_id == initial_channel_id:
@@ -40,6 +52,14 @@ class HofCog(commands.Cog):
                 self.sent_messages.add(message.id)
                 destination_channel_id = TARGET_CHANNEL_ID
                 destination_channel = self.bot.get_channel(destination_channel_id)
+
+                has_perms, missing_perms = await self.has_permissions(
+                    destination_channel
+                )
+                if not has_perms:
+                    print(f"Missing permissions: {', '.join(missing_perms)}")
+                    return
+
                 embed = discord.Embed(
                     title=f"Reactions: {len(unique_users)} | {message.channel.name}",
                     description=f"[Original Post](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})",
