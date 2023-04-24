@@ -2,6 +2,12 @@ import discord
 from discord.ext import commands
 import json
 import asyncio
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s:%(levelname)s:%(name)s: %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 with open("config.json", "r") as f:
     config = json.load(f)
