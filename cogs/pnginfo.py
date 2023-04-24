@@ -8,12 +8,18 @@ from discord import RawReactionActionEvent
 from pathlib import Path
 import yaml
 import asyncio
+import logging
 
 from util.image_metadata import (
     extract_metadata,
     get_embed,
     read_info_from_image_stealth,
 )
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s:%(levelname)s:%(name)s: %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 with open("config.json", "r") as f:
     config = json.load(f)

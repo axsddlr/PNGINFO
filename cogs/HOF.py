@@ -1,7 +1,14 @@
 import discord
+from discord import Permissions
 from discord.ext import commands
 import json
 import asyncio
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s:%(levelname)s:%(name)s: %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 with open("config.json", "r") as f:
     config = json.load(f)
@@ -18,18 +25,24 @@ class HofCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.sent_messages = set()
+        self.target_channel_permissions = asyncio.run(
+            self.get_target_channel_permissions()
+        )
 
-    async def has_permissions(self, channel):
-        me = channel.guild.me
-        perms = channel.permissions_for(me)
-        missing_perms = []
+    async def get_target_channel_permissions(self):
+        guild = self.bot.get_guild(TARGET_GUILD_ID)
+        channel = guild.get_channel(TARGET_CHANNEL_ID)
+        me = guild.me
+        return channel.permissions_for(me)
 
-        if not perms.send_messages:
-            missing_perms.append("Send Messages")
-        if not perms.embed_links:
-            missing_perms.append("Embed Links")
-
-        return (len(missing_perms) == 0, missing_perms)
+    def has_required_permissions(self, permissions: Permissions):
+        required_permissions = ["send_messages", "embed_links"]
+        missing_permissions = [
+            perm_name
+            for perm_name in required_permissions
+            if not getattr(permissions, perm_name)
+        ]
+        return len(missing_permissions) == 0, missing_permissions
 
     async def check_unique_reactions(self, payload):
         initial_channel_id = INITIAL_CHANNEL_ID
@@ -52,28 +65,34 @@ class HofCog(commands.Cog):
                 self.sent_messages.add(message.id)
                 destination_channel_id = TARGET_CHANNEL_ID
                 destination_channel = self.bot.get_channel(destination_channel_id)
+                logger.info(
+                    f"Sending message to {destination_channel.name} in {destination_channel.guild.name}"
+                )
 
-                has_perms, missing_perms = await self.has_permissions(
-                    destination_channel
+                has_perms, missing_perms = self.has_required_permissions(
+                    self.target_channel_permissions
                 )
                 if not has_perms:
-                    print(f"Missing permissions: {', '.join(missing_perms)}")
+                    logger.warning(
+                        f"Missing permissions in target channel: {', '.join(missing_perms)}"
+                    )
                     return
+                else:
+                    logger.info("Has permissions")
+                    embed = discord.Embed(
+                        title=f"Reactions: {len(unique_users)} | {message.channel.name}",
+                        description=f"[Original Post](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})",
+                        timestamp=message.created_at,
+                        color=discord.Color.gold(),
+                    )
+                    embed.set_author(
+                        name=f"{message.author}",
+                        icon_url=message.author.avatar.url,
+                    )
+                    if message.attachments and message.attachments[0].url:
+                        embed.set_image(url=message.attachments[0].url)
 
-                embed = discord.Embed(
-                    title=f"Reactions: {len(unique_users)} | {message.channel.name}",
-                    description=f"[Original Post](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})",
-                    timestamp=message.created_at,
-                    color=discord.Color.gold(),
-                )
-                embed.set_author(
-                    name=f"{message.author}",
-                    icon_url=message.author.avatar.url,
-                )
-                if message.attachments and message.attachments[0].url:
-                    embed.set_image(url=message.attachments[0].url)
-
-                await destination_channel.send(embed=embed)
+                    await destination_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
