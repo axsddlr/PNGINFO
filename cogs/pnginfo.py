@@ -7,6 +7,7 @@ from discord.ext import commands
 from discord import RawReactionActionEvent
 from pathlib import Path
 import yaml
+import asyncio
 
 from util.image_metadata import (
     extract_metadata,
@@ -25,6 +26,11 @@ TARGET_CHANNEL_ID = config["DISCORD_CHANNEL_ID"]
 class ImageCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    async def add_reactions_with_delay(self, message, reactions, delay=2.5):
+        for reaction in reactions:
+            await message.add_reaction(reaction)
+            await asyncio.sleep(delay)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -51,12 +57,10 @@ class ImageCog(commands.Cog):
 
                 if metadata_text:
                     await message.add_reaction("🔍")
-                await message.add_reaction("✉️")
 
                 # Add default reactions
-                default_reactions = ["👍", "👎", "❤️", "😂", "😢"]
-                for reaction in default_reactions:
-                    await message.add_reaction(reaction)
+                default_reactions = ["✉️", "👍", "👎", "❤️", "😂", "😢"]
+                await self.add_reactions_with_delay(message, default_reactions)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: RawReactionActionEvent):
