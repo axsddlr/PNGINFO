@@ -51,10 +51,12 @@ class ImageCog(commands.Cog):
 
                 if metadata_text:
                     await message.add_reaction("🔍")
-                # else:
-                #     await message.add_reaction("ℹ️")
-
                 await message.add_reaction("✉️")
+
+                # Add default reactions
+                default_reactions = ["👍", "👎", "❤️", "😂", "😢"]
+                for reaction in default_reactions:
+                    await message.add_reaction(reaction)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: RawReactionActionEvent):
