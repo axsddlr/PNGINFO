@@ -40,7 +40,10 @@ class HofCog(commands.Cog):
             for reaction in message.reactions:
                 if reaction.emoji not in ["🔍", "✉️"]:
                     async for user in reaction.users():
-                        unique_users.add(user.id)
+                        if (
+                            user.id != message.author.id
+                        ):  # Check if the user is not the message author
+                            unique_users.add(user.id)
 
             if len(unique_users) >= UNIQUE_USERS_THRESHOLD:
                 self.sent_messages.add(message.id)
