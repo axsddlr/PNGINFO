@@ -24,6 +24,7 @@ class HofCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.sent_messages = set()
+        self.reactions_per_message = {}
 
     async def check_unique_reactions(self, payload):
         initial_channel_id = INITIAL_CHANNEL_ID
@@ -36,14 +37,19 @@ class HofCog(commands.Cog):
             if message.id in self.sent_messages:
                 return
 
-            unique_users = set()
+            message_id = payload.message_id
+            if message_id not in self.reactions_per_message:
+                self.reactions_per_message[message_id] = set()
+
+            unique_users = self.reactions_per_message[message_id]
+
             for reaction in message.reactions:
                 if reaction.emoji not in ["🔍", "✉️"]:
                     async for user in reaction.users():
-                        if (
-                            user.id != message.author.id
-                        ):  # Check if the user is not the message author
+                        if user.id != message.author.id:
                             unique_users.add(user.id)
+
+            self.reactions_per_message[message_id] = unique_users
 
             if len(unique_users) >= UNIQUE_USERS_THRESHOLD:
                 self.sent_messages.add(message.id)
@@ -65,6 +71,10 @@ class HofCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        await self.check_unique_reactions(payload)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
         await self.check_unique_reactions(payload)
 
 
