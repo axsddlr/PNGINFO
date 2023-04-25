@@ -25,9 +25,7 @@ class HofCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.sent_messages = set()
-        self.target_channel_permissions = asyncio.run(
-            self.get_target_channel_permissions()
-        )
+        self.target_channel_permissions = None
 
     async def get_target_channel_permissions(self):
         guild = self.bot.get_guild(TARGET_GUILD_ID)
@@ -109,6 +107,11 @@ class HofCog(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         await self.check_unique_reactions(payload)
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.target_channel_permissions = await self.get_target_channel_permissions()
+        logger.info("target_channel_permissions checked")
 
 
 async def setup(bot):
