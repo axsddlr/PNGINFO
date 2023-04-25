@@ -51,7 +51,7 @@ class HofCog(commands.Cog):
                 )
 
                 content = (
-                    f"**Reactions:** {len(unique_users)}**\n"
+                    f"**Reactions:** {len(unique_users)}\n"
                     f"**Original Post:** https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}\n"
                     f"**Author:** {message.author}\n"
                 )
