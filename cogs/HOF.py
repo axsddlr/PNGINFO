@@ -51,8 +51,8 @@ class HofCog(commands.Cog):
                 )
 
                 content = (
-                    f"**Reactions:** {len(unique_users)} | **{message.channel.name}**\n"
-                    f"**Original Post:** [Original Post](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})\n"
+                    f"**Reactions:** {len(unique_users)}**\n"
+                    f"**Original Post:** https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}\n"
                     f"**Author:** {message.author}\n"
                 )
                 if message.attachments and message.attachments[0].url:
