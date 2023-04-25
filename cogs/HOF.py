@@ -79,20 +79,32 @@ class HofCog(commands.Cog):
                     return
                 else:
                     logger.info("Has permissions")
-                    embed = discord.Embed(
-                        title=f"Reactions: {len(unique_users)} | {message.channel.name}",
-                        description=f"[Original Post](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})",
-                        timestamp=message.created_at,
-                        color=discord.Color.gold(),
-                    )
-                    embed.set_author(
-                        name=f"{message.author}",
-                        icon_url=message.author.avatar.url,
-                    )
-                    if message.attachments and message.attachments[0].url:
-                        embed.set_image(url=message.attachments[0].url)
 
-                    await destination_channel.send(embed=embed)
+                    if self.target_channel_permissions.embed_links:
+                        embed = discord.Embed(
+                            title=f"Reactions: {len(unique_users)} | {message.channel.name}",
+                            description=f"[Original Post](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})",
+                            timestamp=message.created_at,
+                            color=discord.Color.gold(),
+                        )
+                        embed.set_author(
+                            name=f"{message.author}",
+                            icon_url=message.author.avatar.url,
+                        )
+                        if message.attachments and message.attachments[0].url:
+                            embed.set_image(url=message.attachments[0].url)
+
+                        await destination_channel.send(embed=embed)
+                    else:
+                        content = (
+                            f"**Reactions:** {len(unique_users)} | **{message.channel.name}**\n"
+                            f"**Original Post:** [Original Post](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})\n"
+                            f"**Author:** {message.author}\n"
+                        )
+                        if message.attachments and message.attachments[0].url:
+                            content += f"**Attachment:** {message.attachments[0].url}\n"
+
+                        await destination_channel.send(content)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
