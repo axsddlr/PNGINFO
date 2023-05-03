@@ -19,14 +19,13 @@ INITIAL_CHANNEL_ID = config["DISCORD_CHANNEL_ID"]
 UNIQUE_USERS_THRESHOLD = config["UNIQUE_USERS_THRESHOLD"]
 DELAY_TIME = config["DELAY_TIME"]
 
-
 class HofCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.sent_messages = set()
         self.reactions_per_message = {}
 
-    async def check_unique_reactions(self, payload):
+    async def check_unique_reactions(self, payload, reaction_added):
         initial_channel_id = INITIAL_CHANNEL_ID
         if payload.channel_id == initial_channel_id:
             channel = self.bot.get_channel(payload.channel_id)
@@ -51,7 +50,7 @@ class HofCog(commands.Cog):
 
             self.reactions_per_message[message_id] = unique_users
 
-            if len(unique_users) >= UNIQUE_USERS_THRESHOLD:
+            if len(unique_users) >= UNIQUE_USERS_THRESHOLD and reaction_added:
                 self.sent_messages.add(message.id)
                 destination_channel_id = TARGET_CHANNEL_ID
                 destination_channel = self.bot.get_channel(destination_channel_id)
@@ -71,12 +70,11 @@ class HofCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        await self.check_unique_reactions(payload)
+        await self.check_unique_reactions(payload, reaction_added=True)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        await self.check_unique_reactions(payload)
-
+        await self.check_unique_reactions(payload, reaction_added=False)
 
 async def setup(bot):
     await bot.add_cog(HofCog(bot))
