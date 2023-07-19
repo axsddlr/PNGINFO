@@ -26,7 +26,10 @@ with open("config.json", "r") as f:
 
 TOKEN = config["DISCORD_TOKEN"]
 TARGET_GUILD_ID = config["DISCORD_GUILD_ID"]
-INITIAL_CHANNEL_IDS = config["DISCORD_CHANNEL_IDS"]
+if isinstance(config["DISCORD_CHANNEL_ID"], list):
+    INITIAL_CHANNEL_IDS = config["DISCORD_CHANNEL_ID"]
+else:
+    INITIAL_CHANNEL_IDS = [config["DISCORD_CHANNEL_ID"]]
 
 
 class ImageCog(commands.Cog):
