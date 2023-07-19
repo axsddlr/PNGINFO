@@ -26,7 +26,10 @@ with open("config.json", "r") as f:
 
 TOKEN = config["DISCORD_TOKEN"]
 TARGET_GUILD_ID = config["DISCORD_GUILD_ID"]
-TARGET_CHANNEL_ID = config["DISCORD_CHANNEL_ID"]
+if isinstance(config["DISCORD_CHANNEL_ID"], list):
+    INITIAL_CHANNEL_IDS = config["DISCORD_CHANNEL_ID"]
+else:
+    INITIAL_CHANNEL_IDS = [config["DISCORD_CHANNEL_ID"]]
 
 
 class ImageCog(commands.Cog):
@@ -50,30 +53,29 @@ class ImageCog(commands.Cog):
             ):
                 continue
 
-            if (
-                message.guild.id == TARGET_GUILD_ID
-                and message.channel.id == TARGET_CHANNEL_ID
-            ):
-                buffer = BytesIO()
-                await attachment.save(buffer)
+            for initial_channel_id in INITIAL_CHANNEL_IDS:
+                if message.guild.id == TARGET_GUILD_ID and (
+                    message.channel.id == initial_channel_id
+                ):
+                    buffer = BytesIO()
+                    await attachment.save(buffer)
 
-                with Image.open(buffer) as image:
-                    buffer.seek(0)
-                    metadata_text = read_info_from_image_stealth(image)
+                    with Image.open(buffer) as image:
+                        buffer.seek(0)
+                        metadata_text = read_info_from_image_stealth(image)
 
-                if metadata_text:
-                    await message.add_reaction("🔍")
+                    if metadata_text:
+                        await message.add_reaction("🔍")
 
-                # Add default reactions
-                default_reactions = ["✉️", "👍", "👎", "❤️", "😂", "😢"]
-                await self.add_reactions_with_delay(message, default_reactions)
+                    # Add default reactions
+                    default_reactions = ["✉️", "👍", "👎", "❤️", "😂", "😢"]
+                    await self.add_reactions_with_delay(message, default_reactions)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: RawReactionActionEvent):
         if payload.user_id != self.bot.user.id:
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
-            user = await self.bot.fetch_user(payload.user_id)
 
             image_attachments = [
                 attachment
@@ -83,6 +85,7 @@ class ImageCog(commands.Cog):
 
             if payload.emoji.name == "🔍":
                 if len(image_attachments) == 1:
+                    user = await self.bot.fetch_user(payload.user_id)
                     attachment = image_attachments[0]
                     buffer = BytesIO()
                     await attachment.save(buffer)
@@ -140,6 +143,7 @@ class ImageCog(commands.Cog):
                             file=parameters_file,
                         )
             elif payload.emoji.name == "✉️":
+                user = await self.bot.fetch_user(payload.user_id)
                 if user:
                     files = []
                     for attachment in message.attachments:

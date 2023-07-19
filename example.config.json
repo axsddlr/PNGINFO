@@ -1,6 +1,6 @@
 {
   "DISCORD_TOKEN": "",
-  "DISCORD_CHANNEL_ID": "<int where the source of images are uploaded to> (remove the <> and quotes)",
+  "DISCORD_CHANNEL_ID": "<single int or int array [xxx, xxx] where the source of images are uploaded to> (remove the <> and quotes, for multiple channels, replace xxx with channel ids)",
   "DISCORD_GUILD_ID": "<int> (remove the <> and quotes)",
   "DESTINATION_DISCORD_CHANNEL_ID": "<int where embed for starboard will be sent> (remove the <> and quotes)",
   "UNIQUE_USERS_THRESHOLD": "<int> how many unique users need to react to the message to be sent to the starboard> (remove the <> and quotes)",
