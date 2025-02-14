@@ -1,20 +1,31 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+FROM python:3.11-slim-bookworm
 
-# Set the working directory to /app
 WORKDIR /app
 
-# Install git
+# Install system dependencies
 RUN apt-get update && \
-    apt-get install -y git && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+    git=1:2.39.2-1.1 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Run bot.py when the container launches
-CMD ["python", "bot.py"]
+# Copy application code
+COPY . .
+
+# Create non-root user
+RUN useradd -m botuser && \
+    chown -R botuser:botuser /app
+
+USER botuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8080/health')"
+
+CMD ["python", "-u", "bot.py"]
