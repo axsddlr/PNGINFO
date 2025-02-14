@@ -1,21 +1,29 @@
-# PNG Metadata Discord Bot
+# Discord Hall of Fame Bot
+ 
+This Discord bot monitors specified channels and sends messages that reach a reaction threshold to a designated starboard channel.
+ 
+## Required Bot Permissions
 
-This Discord bot extracts metadata from PNG images and sends it to users on request. If no metadata is found, the bot provides a link to the GitHub repository for more information.
+The bot requires the following permissions to function properly:
+- Read Messages/View Channels
+- Send Messages
+- Embed Links
+- Read Message History
+- Add Reactions
+- Use External Emojis
+- View Message History
 
-Created by: axsddlr (S6yx#3618)
+These permissions can be granted by giving the bot a role with these permissions or by using the following permission integer when inviting the bot: `274877975552`
+
+## Usage
+ 
+1. Messages in monitored channels that get ⭐ reactions from enough unique users will be sent to the starboard
+2. Only :star: reactions are counted toward the threshold
+3. The starboard entry shows reaction count, original post link, author, and attachments
 
 ## Setup
 
-1. Clone the repository and navigate to the directory
-2. Install dependencies with `pip install -r requirements.txt`
-3. Create a new Discord application and bot account
-4. Copy the bot token and set it as an environment variable named `DISCORD_TOKEN`
-5. Replace `TARGET_GUILD_ID` and `TARGET_CHANNEL_ID` with the ID of the guild and channel where the bot should operate
-6. Run the bot with `python bot.py`
-
-## Usage
-
-1. Upload a PNG image to the designated channel
-2. If metadata is found within the image, react with the 🔍 emoji to receive the image metadata in a DM from the bot
-3. If no metadata is found, the bot will add an ℹ️ emoji reaction. Clicking the ℹ️ will provide a link to the GitHub repository for more information
-4. React with the 📥 emoji to receive the original image file in a DM from the bot
+1. Create a `config.json` file using the example.config.json template
+2. Set up the bot with the required permissions in your Discord server
+3. Configure the channel IDs and reaction thresholds in config.json
+4. Run the bot using Docker or directly with Python
